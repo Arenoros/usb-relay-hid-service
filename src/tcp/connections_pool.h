@@ -44,9 +44,9 @@ namespace mplc {
             connections.push_back(sock);
             if(max < sock->raw()) max = sock->raw();
         }
-        //void Add(ConnType* sock) {
-        //    
-        //    
+        // void Add(ConnType* sock) {
+        //
+        //
         //}
         size_t size() {
             lock_guard<mutex> lock(con_mtx);
@@ -65,16 +65,26 @@ namespace mplc {
         }
         virtual void ReadSockets(const fd_set& rdst) {
             lock_guard<mutex> lock(con_mtx);
-            for(con_iterator it = connections.begin(); it != connections.end(); ++it) {
+            con_iterator it = connections.begin();
+            while(it != connections.end()) {
                 ConnType& sock = **it;
-                if(isContains(sock, rdst) && sock.OnRead() == -1) { DeleteConnection(it); }
+                if(!sock || (isContains(sock, rdst) && sock.OnRead() == -1)) {
+                    DeleteConnection(it++);
+                } else {
+                    ++it;
+                }
             }
         }
         virtual void WriteSockets(const fd_set& wrst) {
             lock_guard<mutex> lock(con_mtx);
-            for(con_iterator it = connections.begin(); it != connections.end(); ++it) {
+            con_iterator it = connections.begin();
+            while(it != connections.end()) {
                 ConnType& sock = **it;
-                if(isContains(sock, wrst) && sock.SendData() == -1) { DeleteConnection(it); }
+                if(!sock || (isContains(sock, wrst) && sock.SendData() == -1)) {
+                    DeleteConnection(it++);
+                } else {
+                    ++it;
+                }
             }
         }
 
@@ -109,7 +119,7 @@ namespace mplc {
                     continue;
                 }
                 ReadSockets(rdst);
-                //WriteSockets(wrst);
+                // WriteSockets(wrst);
             }
         }
     };

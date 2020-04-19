@@ -45,7 +45,8 @@ namespace mplc {
             write_buf.clear();
             return rc;
         }
-        int OnRead() { return Read(); }
+        virtual operator bool() const { return sock_fd != 0; }
+        virtual int OnRead() { return Read(); }
         // template<class TCon>
         // void SetConnection(BaseConnection* new_con) {
         //    con.reset(new_con);//(BaseConnection*)new TCon(*this, nsi);

@@ -112,6 +112,23 @@ namespace mplc {
 #endif
     }
 
+#if defined(_WIN32_WCE) && _WIN32_WCE < 0x600
+#    define GetSystemTimeAsFileTime(ft) GetCurrentFT((ft))
+#endif
+    inline int64_t getInt64FileTime() {
+#if defined(WIN32)
+        FILETIME ft;
+        GetSystemTimeAsFileTime(&ft);
+        return ((int64_t)ft.dwHighDateTime << 32) | (int64_t)ft.dwLowDateTime;
+#else
+        int64_t result;
+        struct timespec mt;
+        clock_gettime(CLOCK_REALTIME, &mt);
+        result = 1000LL * mt.tv_sec + 11644473600000ULL;
+        result *= FT_MILLISECOND;
+        return result + mt.tv_nsec / 100;
+#endif
+    }
 }  // namespace mplc
 
 #include <mutex>

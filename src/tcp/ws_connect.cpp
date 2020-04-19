@@ -101,7 +101,7 @@ namespace mplc {
         }
         return n;
     }
-
+    
     void WSConnect::OnHttpHeader(char* data, int size) {
         handshake.append(data, size);
         size_t pos = (size_t)size + 3 > handshake.size() ? 0 : handshake.size() - size - 3;
@@ -117,7 +117,10 @@ namespace mplc {
     }
     void WSConnect::OnText(const char* payload, int size, bool fin) { print_text(payload); }
     void WSConnect::OnBinary(const uint8_t* payload, int size, bool fin) { print_bin(payload, size); }
-    void WSConnect::OnClose(WSFrame& frame) { SendClose(frame); }
+    void WSConnect::OnClose(WSFrame& frame) {
+        SendClose(frame);
+        state = Closed;
+    }
     void WSConnect::OnPing(WSFrame& frame) { SendPong(frame); }
     void WSConnect::OnPong(WSFrame&) {
         // client response on ping, update timer

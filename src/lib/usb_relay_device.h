@@ -10,8 +10,8 @@
 #  define USBRL_CALL __cdecl
 #endif
 #ifndef USBRL_API
-#  define USBRL_API __declspec(dllimport) USBRL_CALL
-#  pragma comment(lib, "usb_relay_device")
+//#  define USBRL_API __declspec(dllimport) USBRL_CALL
+//#  pragma comment(lib, "usb_relay")
 #endif
 #
 #else /* Windows & Not Microsoft's compiler */

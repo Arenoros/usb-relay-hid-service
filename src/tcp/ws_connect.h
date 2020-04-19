@@ -20,6 +20,7 @@ namespace mplc {
         virtual void NewPayloadPart();
 
         WSConnect(): prev(WSFrame::Continue), state(Closed) { memset(&addr, 0, sizeof(sockaddr_in)); }
+
     protected:
         // TcpSocket& sock;
         struct sockaddr_in addr;
@@ -32,6 +33,7 @@ namespace mplc {
         // error_code ReadHttpHeader(std::string& http);
 
     public:
+        operator bool() const override { return state != Closed; }
         // const TcpSocket& Socket() const override { return sock; }
         WSConnect(socket_t sock, sockaddr_in addr);
         virtual ~WSConnect();
