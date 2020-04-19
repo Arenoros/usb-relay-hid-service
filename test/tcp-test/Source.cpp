@@ -111,7 +111,7 @@ class USBMonitor {
         g_enumlist = usb_relay_device_enumerate();
     }
     USBMonitor()
-        : rescan(mplc::FileTime(1, mplc::FileTime::s), std::bind(&USBMonitor::ScanUsb, this)), g_enumlist(nullptr) {}
+        : rescan(mplc::FileTime(2, mplc::FileTime::s), std::bind(&USBMonitor::ScanUsb, this)), g_enumlist(nullptr) {}
     std::map<std::string, USBDevice::ptr> opened;
 
 public:
@@ -138,22 +138,23 @@ class RemoteConnect : public mplc::WSConnect {
     std::vector<char> buf;
     mplc::AsyncTask update;
     void UpdateState() {
-        rapidjson::StringBuffer sb;
-        Writer writer(sb);
-        writer.StartObject();
+        if(cur_dev) {
+            rapidjson::StringBuffer sb;
+            Writer writer(sb);
+            writer.StartObject();
 
-        
-        writer.Key("method");
-        writer.String("get");
+            writer.Key("method");
+            writer.String("get");
 
-        int rc = GetDeviceState(writer);
+            int rc = GetDeviceState(writer);
 
-        writer.Key("code");
-        writer.Int(rc);
+            writer.Key("code");
+            writer.Int(rc);
 
-        writer.EndObject();
-        sb.Put('\0');
-        SendText(sb.GetString());
+            writer.EndObject();
+            sb.Put('\0');
+            SendText(sb.GetString());
+        }
     }
     static const int MaxRelaysNum = 8;
     std::mutex mtx;
@@ -169,10 +170,11 @@ public:
     void OnText(const char* payload, int size, bool fin) override {
         buf.insert(buf.end(), payload, payload + size);
         if(fin && !buf.empty()) {
+            buf.push_back(0);
+            LogMsg("Request: %s\n", buf.data());
             rapidjson::StringBuffer sb;
             Writer writer(sb);
             writer.StartObject();
-            buf.push_back(0);
             rapidjson::Document request;
             request.ParseInsitu(buf.data());
             if(request.HasParseError()) {
