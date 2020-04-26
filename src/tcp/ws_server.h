@@ -1,12 +1,12 @@
 #pragma once
-#include "tcp_server.h"
+#include "tcp_server.hpp"
 #include "ws_connect.h"
 
 namespace mplc {
     class WSServer : public TCPServer<WSConnect> {
     public:
         void OnConnected(socket_t sock, sockaddr_in addr) override;
-        WSServer(uint16_t port, const char* ip = nullptr);
+        WSServer() {}
     };
 
     std::list<std::string> messages;
@@ -29,6 +29,6 @@ namespace mplc {
             printf("new user: %s\n", inet_ntoa(addr.sin_addr));
             pool.Add(sock, addr);
         }
-        Chat(uint16_t port, const char* ip = nullptr): WSServer(port, ip) {}
+        //Chat(uint16_t port, const char* ip = nullptr): WSServer(port, ip) {}
     };
 }  // namespace mplc

@@ -1,13 +1,14 @@
 #pragma once
 #include "platform_conf.h"
-#include "connections_pool.h"
+#include "connections_pool.hpp"
+#include "tcp_socket.hpp"
 
 namespace mplc {
     template<class ConnType = TcpSocket>
     class TCPServer {
         // typedef TcpSocket SockType;
     protected:
-        ConnetctionsPool<ConnType> pool;
+        ConnectionsPool<ConnType> pool;
 
     public:
         enum StatusType { NO_INIT, ERR, WAIT, LISTEN };
@@ -19,8 +20,8 @@ namespace mplc {
         }
         int Bind(uint16_t port, const char* intface = nullptr) {
             sock.Open();
-            int val = 1;
-            sock.SetOption(SO_REUSEADDR, (char*)&val, sizeof(int));
+            //int val = 1;
+            //sock.SetOption(SO_REUSEADDR, (char*)&val, sizeof(int));
             if(sock.Bind(port, intface) != 0) {
                 ec = GetLastSockError();
                 return ec;
@@ -45,7 +46,7 @@ namespace mplc {
                 tv.tv_usec = 0;
                 fd_set rdst;
                 FD_ZERO(&rdst);
-                ConnetctionsPool<TcpSocket>::AddToSet(sock, rdst);
+                ConnectionsPool<TcpSocket>::AddToSet(sock, rdst);
                 SOCKET rv = select(sock.raw() + 1, &rdst, nullptr, nullptr, &tv);
                 if(rv == 0) continue;
                 if(!IsValidSock(rv)) {
@@ -53,16 +54,16 @@ namespace mplc {
                     Disconnect();
                     return ec;
                 }
-                if(ConnetctionsPool<TcpSocket>::isContains(sock, rdst)) Accept();
+                if(ConnectionsPool<TcpSocket>::isContains(sock, rdst)) Accept();
             }
             return 0;
         }
 
-        TCPServer() { Disconnect(); }
-        TCPServer(uint16_t port, const char* intface = nullptr): status(NO_INIT) {
-            Disconnect();
-            Bind(port, intface);
-        }
+        TCPServer(): status(NO_INIT) { Disconnect(); }
+        //TCPServer(): status(NO_INIT) {
+        //    Disconnect();
+        //    //            Bind(port, intface);
+        //}
         virtual ~TCPServer() { Disconnect(); }
         virtual void OnConnected(socket_t sock, sockaddr_in addr) = 0;
 

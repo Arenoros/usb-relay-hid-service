@@ -154,12 +154,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="connections_pool.h" />
+    <ClInclude Include="connections_pool.hpp" />
     <ClInclude Include="filetime.h" />
     <ClInclude Include="platform_conf.h" />
     <ClInclude Include="sha1.h" />
-    <ClInclude Include="tcp_server.h" />
-    <ClInclude Include="tcp_socket.h" />
+    <ClInclude Include="tcp_server.hpp" />
+    <ClInclude Include="tcp_socket.hpp" />
     <ClInclude Include="thread_pool.h" />
     <ClInclude Include="ws_connect.h" />
     <ClInclude Include="ws_frame.h" />

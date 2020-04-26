@@ -47,8 +47,9 @@ void print_json(const rapidjson::Value& json) {
 struct USBDevice {
     typedef std::shared_ptr<USBDevice> ptr;
     std::string name;
+    int ch_count;
     intptr_t hndl;
-    USBDevice(intptr_t hndl): hndl(hndl) {}
+    USBDevice(intptr_t hndl): hndl(hndl), ch_count(0) {}
     std::array<bool, 8> GetState(int* rc = nullptr) {
         std::array<bool, 8> state;
         state.fill(false);
@@ -60,10 +61,10 @@ struct USBDevice {
         // BUGBUG g_dev is not usb_relay_device_info* in the orig library! use my new f()  ?? use only info in the
         // list?
         struct usb_relay_device_info* di = (struct usb_relay_device_info*)hndl;
-        int numChannels = (unsigned char)di->type;
-        if(numChannels > state.size() || numChannels == 0) {
+        ch_count = (unsigned char)di->type;
+        if(ch_count > state.size() || ch_count == 0) {
             // oops?
-            numChannels = state.size();
+            ch_count = state.size();
         }
         // g_chanNum = numChannels;
         unsigned st = 0;
@@ -75,7 +76,7 @@ struct USBDevice {
 
         for(int i = 0; i < state.size(); i++) {
             bool val = st & (1 << i);
-            if(((i + 1) > numChannels)) val = false;
+            if(((i + 1) > ch_count)) val = false;
             state[i] = val;
         }
         if(rc) *rc = 0;
@@ -92,6 +93,8 @@ struct USBDevice {
         if(dh) {
             dev = std::make_shared<USBDevice>(dh);
             dev->name = serial_num;
+            struct usb_relay_device_info* di = (struct usb_relay_device_info*)dh;
+            dev->ch_count = (unsigned char)di->type;
         }
         return dev;
     }
@@ -164,7 +167,7 @@ class RemoteConnect : public mplc::WSConnect {
 public:
     RemoteConnect(mplc::socket_t& connect, sockaddr_in nsi)
         : WSConnect(connect, nsi),
-          update(mplc::FileTime(1, mplc::FileTime::s), std::bind(&RemoteConnect::UpdateState, this)),
+          update(mplc::FileTime(500, mplc::FileTime::ms), std::bind(&RemoteConnect::UpdateState, this)),
           monitor(USBMonitor::instance()) {}
 
     void OnText(const char* payload, int size, bool fin) override {
@@ -285,9 +288,9 @@ public:
         printf("new user: %s\n", inet_ntoa(nsi.sin_addr));
         pool.Add(connect, nsi);
     }
-    CmdServer(uint16_t port, const char* ip = nullptr): TCPServer(port, ip) {
+    /*CmdServer(uint16_t port, const char* ip = nullptr): TCPServer(port, ip) {
         std::cout << "Server started: " << (ip ? ip : "0.0.0.0") << ':' << port << std::endl;
-    }
+    }*/
 };
 void test() {
     std::this_thread::sleep_for(std::chrono::seconds(10));
@@ -301,7 +304,14 @@ int main() {
     mplc::InitializeSockets();
     assert(test_Accept());
     // std::thread th(test);
-    CmdServer server(4444);
+    CmdServer server;
+    int rc = server.Bind(4444);
+    if(rc != 0) {
+        std::cout << "Can't bind socket to 0.0.0.0" << ':' << 4444 << std::endl
+        << "Error code: " << rc << std::endl;
+        return 1;
+    }
+    std::cout << "Server started: 0.0.0.0" << ':' << 4444 << std::endl;
     server.Start();
     WSACleanup();
     return 0;

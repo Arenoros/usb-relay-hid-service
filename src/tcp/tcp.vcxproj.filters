@@ -21,9 +21,6 @@
     <ClInclude Include="sha1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tcp_socket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ws_connect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -33,16 +30,19 @@
     <ClInclude Include="ws_server.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="connections_pool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tcp_server.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="filetime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="thread_pool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tcp_server.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tcp_socket.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="connections_pool.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,23 +2,23 @@
 
 #include <list>
 #include "platform_conf.h"
-#include "tcp_socket.h"
+#include "tcp_socket.hpp"
 
 namespace mplc {
     template<class ConnType = TcpSocket>
-    struct ConnetctionsPool {
+    struct ConnectionsPool {
         typedef std::list<ConnType*> ConLst;
         typedef typename std::list<ConnType*>::iterator con_iterator;
         static const size_t MAX_CONNECTIONS = FD_SETSIZE;
         static void AddToSet(const ConnType& sock, fd_set& set) { FD_SET(sock.raw(), &set); }
         static void RemFromSet(const ConnType& sock, fd_set& set) { FD_CLR(sock.raw(), &set); }
         static bool isContains(const ConnType& sock, const fd_set& set) { return FD_ISSET(sock.raw(), &set); }
-        ConnetctionsPool(): stop(false), th(&ConnetctionsPool::worker, this) {
+        ConnectionsPool(): stop(false), th(&ConnectionsPool::worker, this) {
             FD_ZERO(&read_set);
             max = INVALID_SOCKET;
             ec = 0;
         }
-        virtual ~ConnetctionsPool() {
+        virtual ~ConnectionsPool() {
             stop = true;
             FD_ZERO(&read_set);
             th.join();
