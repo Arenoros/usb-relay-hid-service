@@ -99,25 +99,30 @@ namespace mplc {
         void worker() {
             while(!stop) {
                 struct timeval tv;
+                if(connections.empty()) {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    continue;
+                }
                 // Ждем событий 1 сек
                 tv.tv_sec = 1;
                 tv.tv_usec = 0;
                 fd_set rdst, wrst;
                 {
                     lock_guard<mutex> lock(con_mtx);
-                    std::memcpy(&rdst, &read_set, sizeof fd_set);
+                    std::memcpy(&rdst, &read_set, sizeof(fd_set));
                 }
                 FD_ZERO(&wrst);
                 for(con_iterator it = connections.begin(); it != connections.end(); ++it) {
                     ConnType& sock = **it;
                     if(sock.hasData()) { AddToSet(sock, wrst); }
                 }
-                SOCKET rv = select(GetMax() + 1, &rdst, &wrst, nullptr, &tv);
+                SOCKET rv = select(GetMax() + 1, &rdst, nullptr, nullptr, &tv);
                 if(rv == 0) continue;
                 if(!IsValidSock(rv)) {
                     ec = GetLastSockError();
                     continue;
                 }
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 ReadSockets(rdst);
                 // WriteSockets(wrst);
             }
